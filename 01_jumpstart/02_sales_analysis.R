@@ -121,30 +121,86 @@ sales_by_year_tbl %>%
   
   geom_col(fill = "#2C3E50") + 
   geom_label(aes(
-    label = sales_text
-  ))
+    label = sales_text)) + 
+  geom_smooth(method = "lm", se = FALSE) +
+  
+  # Formatting
+  theme_tq() + 
+  scale_y_continuous(labels = scales::dollar) + 
+  labs(
+    title = "Revenue by Year",
+    subtitle = "Upward trend",
+    x = "",
+    y = "Revenue"
+  )
+
     
 
 # 6.2 Sales by Year and Category 2 ----
 
 
 # Step 1 - Manipulate
-
-
+sales_by_year_cat_2_tbl <- bike_orderlines_wrangled_tbl %>%
+  # Select columns and add a year column
+  select(order_date, total_price, category_2) %>%
+  mutate(year = year(order_date)) %>%
+  
+  # Group data and summarize year and cat2
+  group_by(year, category_2) %>%
+  summarise(
+    sales = sum(total_price)
+  ) %>%
+  ungroup() %>%
+  # Format  
+  mutate(sales_text = scales::dollar(sales))
 
 
 # Step 2 - Visualize
 
-
+sales_by_year_cat_2_tbl %>%
+  # Set up x, y, fill 
+  ggplot(
+    aes(
+      x = year,
+      y = sales,
+      fill = category_2
+    )) + 
+  geom_col() +
+  geom_smooth(method = "lm", se = FALSE) + 
+  
+  # Facetting by category 2
+  facet_wrap(~ category_2, ncol = 3, scales = "free_y") + 
+  
+  # Formatting
+  
+  theme_tq() + 
+  scale_fill_tq() + 
+  scale_y_continuous(label = scales::dollar) + 
+  labs(
+    title = "Revenue by Year and Type of bike",
+    subtitle = "Each product category has an upward trend",
+    x = "",
+    y = "Revenue",
+    fill = "Product Secondary Category"
+  )
+  
+  
+  
 
 
 # 7.0 Writing Files ----
 
+fs::dir_create("00_data/bike_sales/data_wrangled_student")
 
 # 7.1 Excel ----
-
+bike_orderlines_wrangled_tbl %>%
+  write_xlsx("00_data/bike_sales/data_wrangled_student/bike_orderlines.xlsx")
 
 # 7.2 CSV ----
-
+bike_orderlines_wrangled_tbl %>%
+  write_csv("00_data/bike_sales/data_wrangled_student/bike_orderlines.csv")
 
 # 7.3 RDS ----
+
+bike_orderlines_wrangled_tbl %>%
+  write_rds("00_data/bike_sales/data_wrangled_student/bike_orderlines.rds")
